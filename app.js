@@ -6,7 +6,8 @@ const jwt = require('jsonwebtoken');
 
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const { hash } = require('crypto');
+const { hash, sign } = require('crypto');
+const user = require('./models/user.js');
 
 app.set("view engine", "ejs");
 app.use(express.json());
@@ -32,12 +33,39 @@ app.post('/create', (req, res) => {
                 age
             })
             
-            let token = jwt.sign({email}, "shhhhhh");
-            res.cookie("token", token)
+            let token = jwt.sign({email}, "shhhhhh"); //shhhh is basically a security key to secure our data 
+            //we use {email} for validate user after request
+            res.cookie("token", token) //Store cookie of above user which was createdd recently
             res.send(createdUser);
         } )
     })
     
+})
+
+//Login Route
+app.get("/login", (req, res) => {
+    res.render("login")
+})
+
+app.post("/login", async (req,res) => {
+    let user = await userModel.findOne({email: req.body.email});
+    if(!user) return res.send("Something went wrong email");
+
+    bcrypt.compare(req.body.password, user.password, (err, result) => {
+        if(result){
+        let token = jwt.sign({email: user.email}, "shhhhhh")
+        res.cookie("token", token);
+        res.send("Login Successfully")
+        }
+
+        else res.send("Something is wrong pass")
+    })
+})
+
+//Logout Route
+app.post("/logout", (req,res) => {
+    res.cookie("token", "") //to logout we have to remove token 
+    res.redirect("/")
 })
 
 app.listen(3000);
