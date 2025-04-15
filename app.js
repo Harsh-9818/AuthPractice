@@ -63,7 +63,7 @@ app.post("/login", async (req,res) => {
 })
 
 //Logout Route
-app.post("/logout", (req,res) => {
+app.get("/logout", (req,res) => {
     res.cookie("token", "") //to logout we have to remove token 
     res.redirect("/")
 })
